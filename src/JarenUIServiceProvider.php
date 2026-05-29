@@ -115,13 +115,10 @@ class JarenUIServiceProvider extends ServiceProvider
 
         // Register each anonymous component under the "jaren" prefix
         // so <x-jaren::button> resolves to jarenui::components.jaren.button
-        foreach ($this->bladeComponents as $alias => $view) {
-            $viewName = str_replace('.', '/', $view);
-            Blade::anonymousComponent(
-                'jarenui::components/jaren/' . $viewName,
-                'jaren::' . $alias
-            );
-        }
+        Blade::anonymousComponentPath(
+            __DIR__ . '/../resources/views/components/jaren',
+            'jaren'
+        );
 
         // ── Livewire components ────────────────────────────────────────────────
         foreach ($this->livewireComponents as $name => $class) {
