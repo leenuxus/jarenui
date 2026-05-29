@@ -1,0 +1,222 @@
+/*
+ * JarenUI — Design Tokens
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Include this file once in your layout (or @jarenStyles blade directive).
+ * All components consume these variables — override any token to customise.
+ *
+ * Tailwind mapping:
+ *   bg-[var(--accent)]      → primary colour
+ *   text-[var(--text)]      → primary text
+ *   border-[var(--border)]  → subtle border
+ *
+ * Themes:
+ *   :root             → light mode defaults
+ *   [data-theme=dark] → dark mode overrides
+ *   .theme-*          → named brand themes (see below)
+ */
+
+/* ── Light (default) ────────────────────────────────────────────────────── */
+:root {
+    /* Backgrounds */
+    --bg:       #ffffff;
+    --bg2:      #f5f4f1;
+    --bg3:      #eeecea;
+
+    /* Surfaces */
+    --surface:  #ffffff;
+    --surface2: #f5f4f1;
+
+    /* Borders */
+    --border:   rgba(0, 0, 0, 0.10);
+    --border2:  rgba(0, 0, 0, 0.18);
+    --border3:  rgba(0, 0, 0, 0.06);
+
+    /* Text */
+    --text:     #1a1917;
+    --text2:    #5a5854;
+    --text3:    #9a9894;
+
+    /* Accent (primary brand colour) */
+    --accent:      #2563eb;
+    --accent-bg:   #eff6ff;
+    --accent-text: #1d4ed8;
+
+    /* Semantic */
+    --danger:       #dc2626;
+    --danger-bg:    #fef2f2;
+    --danger-text:  #b91c1c;
+
+    --success:      #16a34a;
+    --success-bg:   #f0fdf4;
+    --success-text: #15803d;
+
+    --warning:      #d97706;
+    --warning-bg:   #fffbeb;
+    --warning-text: #b45309;
+
+    /* Shape */
+    --radius:    6px;
+    --radius-lg: 10px;
+    --radius-xl: 14px;
+
+    /* Elevation */
+    --shadow:    0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.06);
+
+    /* Typography */
+    --font:      'DM Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+    /* Layout */
+    --sidebar-w: 220px;
+    --header-h:  52px;
+}
+
+/* ── Dark mode ──────────────────────────────────────────────────────────── */
+[data-theme="dark"],
+.dark {
+    --bg:       #111110;
+    --bg2:      #1a1917;
+    --bg3:      #232220;
+    --surface:  #1a1917;
+    --surface2: #232220;
+
+    --border:   rgba(255, 255, 255, 0.09);
+    --border2:  rgba(255, 255, 255, 0.15);
+    --border3:  rgba(255, 255, 255, 0.04);
+
+    --text:     #f0ede8;
+    --text2:    #9a9894;
+    --text3:    #5a5854;
+
+    --accent:      #3b82f6;
+    --accent-bg:   #172554;
+    --accent-text: #93c5fd;
+
+    --danger:       #ef4444;
+    --danger-bg:    #2d0a0a;
+    --danger-text:  #fca5a5;
+
+    --success:      #22c55e;
+    --success-bg:   #052e16;
+    --success-text: #86efac;
+
+    --warning:      #f59e0b;
+    --warning-bg:   #1c1003;
+    --warning-text: #fcd34d;
+
+    --shadow:    0 1px 3px rgba(0,0,0,0.30);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,0.40);
+}
+
+/* ── System dark (Tailwind class-based) ─────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --bg:       #111110;
+        --bg2:      #1a1917;
+        --bg3:      #232220;
+        --surface:  #1a1917;
+        --surface2: #232220;
+        --border:   rgba(255, 255, 255, 0.09);
+        --border2:  rgba(255, 255, 255, 0.15);
+        --border3:  rgba(255, 255, 255, 0.04);
+        --text:     #f0ede8;
+        --text2:    #9a9894;
+        --text3:    #5a5854;
+        --accent:      #3b82f6;
+        --accent-bg:   #172554;
+        --accent-text: #93c5fd;
+        --danger:      #ef4444;  --danger-bg:  #2d0a0a;  --danger-text:  #fca5a5;
+        --success:     #22c55e;  --success-bg: #052e16;  --success-text: #86efac;
+        --warning:     #f59e0b;  --warning-bg: #1c1003;  --warning-text: #fcd34d;
+        --shadow:    0 1px 3px rgba(0,0,0,.3);
+        --shadow-lg: 0 4px 16px rgba(0,0,0,.4);
+    }
+}
+
+/* ── Named themes ───────────────────────────────────────────────────────── */
+
+/* Rose / pink brand */
+.theme-rose {
+    --accent:      #e11d48;
+    --accent-bg:   #fff1f2;
+    --accent-text: #be123c;
+}
+.dark.theme-rose, [data-theme="dark"].theme-rose {
+    --accent:      #fb7185;
+    --accent-bg:   #4c0519;
+    --accent-text: #fda4af;
+}
+
+/* Violet brand */
+.theme-violet {
+    --accent:      #7c3aed;
+    --accent-bg:   #f5f3ff;
+    --accent-text: #6d28d9;
+}
+.dark.theme-violet, [data-theme="dark"].theme-violet {
+    --accent:      #a78bfa;
+    --accent-bg:   #2e1065;
+    --accent-text: #c4b5fd;
+}
+
+/* Emerald brand */
+.theme-emerald {
+    --accent:      #059669;
+    --accent-bg:   #ecfdf5;
+    --accent-text: #047857;
+}
+.dark.theme-emerald, [data-theme="dark"].theme-emerald {
+    --accent:      #34d399;
+    --accent-bg:   #022c22;
+    --accent-text: #6ee7b7;
+}
+
+/* Amber brand */
+.theme-amber {
+    --accent:      #d97706;
+    --accent-bg:   #fffbeb;
+    --accent-text: #b45309;
+}
+.dark.theme-amber, [data-theme="dark"].theme-amber {
+    --accent:      #fbbf24;
+    --accent-bg:   #1c1003;
+    --accent-text: #fcd34d;
+}
+
+/* Sharp corners variant */
+.theme-sharp {
+    --radius:    3px;
+    --radius-lg: 5px;
+    --radius-xl: 7px;
+}
+
+/* Rounded corners variant */
+.theme-rounded {
+    --radius:    8px;
+    --radius-lg: 14px;
+    --radius-xl: 20px;
+}
+
+/* ── Base resets ────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+    font-family: var(--font);
+    color:       var(--text);
+    background:  var(--bg);
+    -webkit-font-smoothing:  antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+/* Focus visible ring (global fallback) */
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
