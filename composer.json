@@ -30,23 +30,23 @@
 
     "autoload": {
         "psr-4": {
-            "jarenui\\": "src/"
+            "JarenUI\\": "src/"
         }
     },
 
     "autoload-dev": {
         "psr-4": {
-            "jarenui\\Tests\\": "tests/"
+            "JarenUI\\Tests\\": "tests/"
         }
     },
 
     "extra": {
         "laravel": {
             "providers": [
-                "jarenui\\JarenUIServiceProvider"
+                "JarenUI\\JarenUIServiceProvider"
             ],
             "aliases": {
-                "jarenui": "jarenui\\Facades\\jarenui"
+                "JarenUI": "JarenUI\\Facades\\JarenUI"
             }
         }
     },
