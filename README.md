@@ -1,6 +1,5 @@
 # jarenui for Laravel Livewire
 
-[![Tests](https://github.com/leenuxus/jarenui/actions/workflows/tests.yml/badge.svg)](https://github.com/leenuxus/jarenui/actions)
 [![Latest Version](https://img.shields.io/packagist/v/leenuxus/jarenui.svg)](https://packagist.org/packages/leenuxus/jarenui)
 [![PHP Version](https://img.shields.io/packagist/php-v/leenuxus/jarenui.svg)](https://packagist.org/packages/leenuxus/jarenui)
 [![License](https://img.shields.io/github/license/leenuxus/jarenui)](LICENSE.md)
