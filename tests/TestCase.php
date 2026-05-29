@@ -1,8 +1,8 @@
 <?php
 
-namespace FluxUI\Tests;
+namespace JarenUI\Tests;
 
-use FluxUI\FluxUIServiceProvider;
+use JarenUI\JarenUIServiceProvider;
 use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 
@@ -12,14 +12,14 @@ abstract class TestCase extends OrchestraTestCase
     {
         return [
             LivewireServiceProvider::class,
-            FluxUIServiceProvider::class,
+            JarenUIServiceProvider::class,
         ];
     }
 
     protected function getPackageAliases($app): array
     {
         return [
-            'FluxUI' => \FluxUI\Facades\FluxUI::class,
+            'JarenUI' => \JarenUI\Facades\JarenUI::class,
         ];
     }
 

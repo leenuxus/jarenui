@@ -1,9 +1,9 @@
 # jarenui for Laravel Livewire
 
-[![Tests](https://github.com/jarenui/livewire/actions/workflows/tests.yml/badge.svg)](https://github.com/jarenui/livewire/actions)
-[![Latest Version](https://img.shields.io/packagist/v/jarenui/livewire.svg)](https://packagist.org/packages/jarenui/livewire)
-[![PHP Version](https://img.shields.io/packagist/php-v/jarenui/livewire.svg)](https://packagist.org/packages/jarenui/livewire)
-[![License](https://img.shields.io/github/license/jarenui/livewire)](LICENSE.md)
+[![Tests](https://github.com/leenuxus/jarenui/actions/workflows/tests.yml/badge.svg)](https://github.com/leenuxus/jarenui/actions)
+[![Latest Version](https://img.shields.io/packagist/v/leenuxus/jarenui.svg)](https://packagist.org/packages/leenuxus/jarenui)
+[![PHP Version](https://img.shields.io/packagist/php-v/leenuxus/jarenui.svg)](https://packagist.org/packages/leenuxus/jarenui)
+[![License](https://img.shields.io/github/license/leenuxus/jarenui)](LICENSE.md)
 
 **50+ production-ready Livewire components** — dark mode, CSS-variable theming, Alpine.js interactivity, full ARIA accessibility, and zero Tailwind config required.
 
@@ -14,7 +14,7 @@
 | Dependency     | Version        |
 |----------------|----------------|
 | PHP            | `^8.1`         |
-| Laravel        | `^10 \| ^11 \| ^12` |
+| Laravel        | `^10 \| ^11 \| ^12` | ^13` |
 | Livewire       | `^3.0`         |
 | Alpine.js      | `^3.0`         |
 | Tailwind CSS   | `^3.0` (optional — all styling uses CSS variables) |
@@ -24,7 +24,7 @@
 ## Installation
 
 ```bash
-composer require jarenui/livewire
+composer require leenuxus/jarenui
 php artisan jaren:install
 ```
 
