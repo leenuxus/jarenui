@@ -19,35 +19,29 @@ class InstallCommand extends Command
     {
         $this->components->info('Installing JarenUI Livewire Component Library…');
 
-        // 1. Publish CSS assets
-        if (! $this->option('no-css')) {
-            $this->publishAssets();
-        }
-
-        // 2. Publish config
+        // 1. Publish config
         if (! $this->option('no-config')) {
             $this->publishConfig();
         }
 
-        // 3. Optionally publish views
+        // 2. Optionally publish views
         if ($this->option('views')) {
             $this->publishViews();
         }
 
-        // 4. Add @jarenStyles to layout if found
+        // 3. Add @jarenStyles to layout if found
         $this->injectJarenStyles();
 
-        // 5. Add <livewire:jaren.toast/> to layout if found
+        // 4. Add <livewire:jaren.toast/> to layout if found
         $this->injectToastComponent();
 
-        // 6. Add @source directive to app.css for Tailwind v4
+        // 5. Add @source and @import jarenui.css to app.css
         $this->injectTailwindSource();
 
         $this->newLine();
         $this->components->success('JarenUI installed successfully!');
 
         $this->line('');
-        $this->line('  <fg=green>✓</> CSS tokens: <fg=cyan>public/vendor/jarenui/css/jarenui.css</>');
         $this->line('  <fg=green>✓</> Config:     <fg=cyan>config/jarenui.php</>');
         $this->line('');
         $this->line('  <fg=yellow>Next steps:</>');
@@ -58,16 +52,6 @@ class InstallCommand extends Command
         $this->line('');
 
         return self::SUCCESS;
-    }
-
-    protected function publishAssets(): void
-    {
-        $this->components->task('Publishing CSS assets', function () {
-            $this->callSilently('vendor:publish', [
-                '--tag'   => 'jarenui-assets',
-                '--force' => $this->option('force'),
-            ]);
-        });
     }
 
     protected function publishConfig(): void
@@ -153,7 +137,7 @@ class InstallCommand extends Command
     protected function injectTailwindSource(): void
     {
         $css = $this->findAppCss();
- 
+
         if (! $css) {
             $this->components->twoColumnDetail(
                 'Skipped Tailwind @source injection',
@@ -161,35 +145,72 @@ class InstallCommand extends Command
             );
             return;
         }
- 
+
         $contents = File::get($css);
-        $directive = '@source "../../vendor/leenuxus/jarenui/resources/views";';
- 
+        $source   = '@source "../../vendor/leenuxus/jarenui/resources/views";';
+        $import   = '@import "../../vendor/leenuxus/jarenui/resources/css/jarenui.css";';
+
+        // ── @source ──────────────────────────────────────────────────────────────
         if (str_contains($contents, 'leenuxus/jarenui/resources/views')) {
             $this->components->twoColumnDetail('Skipped Tailwind @source injection', '<fg=yellow>already present</>');
-            return;
-        }
- 
-        // Insert after @import "tailwindcss"; if present, otherwise prepend
-        if (str_contains($contents, '@import "tailwindcss"')) {
-            $updated = str_replace(
-                '@import "tailwindcss";',
-                '@import "tailwindcss";' . PHP_EOL . $directive,
-                $contents
-            );
-        } elseif (str_contains($contents, "@import 'tailwindcss'")) {
-            $updated = str_replace(
-                "@import 'tailwindcss';",
-                "@import 'tailwindcss';" . PHP_EOL . $directive,
-                $contents
-            );
         } else {
-            // No tailwindcss import found — add at the top
-            $updated = $directive . PHP_EOL . PHP_EOL . $contents;
+            if (str_contains($contents, '@import "tailwindcss"')) {
+                $contents = str_replace(
+                    '@import "tailwindcss";',
+                    '@import "tailwindcss";' . PHP_EOL . $source,
+                    $contents
+                );
+            } elseif (str_contains($contents, "@import 'tailwindcss'")) {
+                $contents = str_replace(
+                    "@import 'tailwindcss';",
+                    "@import 'tailwindcss';" . PHP_EOL . $source,
+                    $contents
+                );
+            } else {
+                $contents = $source . PHP_EOL . PHP_EOL . $contents;
+            }
+
+            $this->components->task('Injecting Tailwind @source into app.css');
         }
- 
-        File::put($css, $updated);
-        $this->components->task('Injecting Tailwind @source into app.css');
+
+        // ── @source ──────────────────────────────────────────────────────────────
+        if (str_contains($contents, 'leenuxus/jarenui/resources/views')) {
+            $this->components->twoColumnDetail('Skipped Tailwind @source injection', '<fg=yellow>already present</>');
+        } else {
+            if (str_contains($contents, '@import "tailwindcss"')) {
+                $contents = str_replace(
+                    '@import "tailwindcss";',
+                    '@import "tailwindcss";' . PHP_EOL . $source,
+                    $contents
+                );
+            } elseif (str_contains($contents, "@import 'tailwindcss'")) {
+                $contents = str_replace(
+                    "@import 'tailwindcss';",
+                    "@import 'tailwindcss';" . PHP_EOL . $source,
+                    $contents
+                );
+            } else {
+                $contents = $source . PHP_EOL . PHP_EOL . $contents;
+            }
+
+            $this->components->task('Injecting Tailwind @source into app.css');
+        }
+
+        // ── @import jarenui.css ───────────────────────────────────────────────────
+        if (str_contains($contents, 'jarenui/resources/css/jarenui.css')) {
+            $this->components->twoColumnDetail('Skipped jarenui.css import', '<fg=yellow>already present</>');
+        } else {
+            // Add after @source line we just added (or at end of imports block)
+            $contents = str_replace(
+                $source,
+                $source . PHP_EOL . $import,
+                $contents
+            );
+
+            $this->components->task('Injecting jarenui.css import into app.css');
+        }
+
+        File::put($css, $contents);
     }
 
     protected function findAppCss(): ?string
@@ -199,13 +220,13 @@ class InstallCommand extends Command
             resource_path('sass/app.scss'),
             base_path('resources/css/app.css'),
         ];
- 
+
         foreach ($candidates as $path) {
             if (File::exists($path)) {
                 return $path;
             }
         }
- 
+
         return null;
     }
 
