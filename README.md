@@ -12,9 +12,9 @@
 
 | Dependency     | Version        |
 |----------------|----------------|
-| PHP            | `^8.1`         |
-| Laravel        | `^10 \| ^11 \| ^12` | ^13` |
-| Livewire       | `^3.0`         |
+| PHP            | `^8.4`         |
+| Laravel        | `^13`          |
+| Livewire       | `^4.0`         |
 | Alpine.js      | `^3.0`         |
 | Tailwind CSS   | `^3.0` (optional — all styling uses CSS variables) |
 
