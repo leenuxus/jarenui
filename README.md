@@ -448,7 +448,7 @@ Views land in `resources/views/vendor/jarenui/`. Laravel will prefer these over 
 ## Upgrading
 
 ```bash
-composer update jarenui/livewire
+composer update leenuxus/jarenui
 php artisan jaren:publish --assets --force
 ```
 
@@ -457,7 +457,7 @@ php artisan jaren:publish --assets --force
 ## Contributing
 
 ```bash
-git clone https://github.com/jarenui/livewire
+git clone https://github.com/leenuxus/jarenui
 cd livewire
 composer install
 vendor/bin/pest
