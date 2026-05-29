@@ -40,6 +40,9 @@ class InstallCommand extends Command
         // 5. Add <livewire:jaren.toast/> to layout if found
         $this->injectToastComponent();
 
+        // 6. Add @source directive to app.css for Tailwind v4
+        $this->injectTailwindSource();
+
         $this->newLine();
         $this->components->success('JarenUI installed successfully!');
 
@@ -50,7 +53,7 @@ class InstallCommand extends Command
         $this->line('  <fg=yellow>Next steps:</>');
         $this->line('  1. Add <fg=cyan>@jarenStyles</> inside <head> of your layout (if not auto-injected)');
         $this->line('  2. Add <fg=cyan><livewire:jaren.toast/></> before </body> (if not auto-injected)');
-        $this->line('  3. Set <fg=cyan>FLUXUI_ACCENT</> in .env to customise your brand colour');
+        $this->line('  3. Set <fg=cyan>JARENUI_ACCENT</> in .env to customise your brand colour');
         $this->line('  4. Run <fg=cyan>php artisan jaren:publish --help</> to explore more options');
         $this->line('');
 
@@ -145,6 +148,65 @@ class InstallCommand extends Command
             File::put($layout, $updated);
             $this->components->task('Injecting <livewire:jaren.toast /> into layout');
         }
+    }
+
+    protected function injectTailwindSource(): void
+    {
+        $css = $this->findAppCss();
+ 
+        if (! $css) {
+            $this->components->twoColumnDetail(
+                'Skipped Tailwind @source injection',
+                '<fg=yellow>app.css not found — add manually:</> @source "../../vendor/leenuxus/jarenui/resources/views";'
+            );
+            return;
+        }
+ 
+        $contents = File::get($css);
+        $directive = '@source "../../vendor/leenuxus/jarenui/resources/views";';
+ 
+        if (str_contains($contents, 'leenuxus/jarenui/resources/views')) {
+            $this->components->twoColumnDetail('Skipped Tailwind @source injection', '<fg=yellow>already present</>');
+            return;
+        }
+ 
+        // Insert after @import "tailwindcss"; if present, otherwise prepend
+        if (str_contains($contents, '@import "tailwindcss"')) {
+            $updated = str_replace(
+                '@import "tailwindcss";',
+                '@import "tailwindcss";' . PHP_EOL . $directive,
+                $contents
+            );
+        } elseif (str_contains($contents, "@import 'tailwindcss'")) {
+            $updated = str_replace(
+                "@import 'tailwindcss';",
+                "@import 'tailwindcss';" . PHP_EOL . $directive,
+                $contents
+            );
+        } else {
+            // No tailwindcss import found — add at the top
+            $updated = $directive . PHP_EOL . PHP_EOL . $contents;
+        }
+ 
+        File::put($css, $updated);
+        $this->components->task('Injecting Tailwind @source into app.css');
+    }
+
+    protected function findAppCss(): ?string
+    {
+        $candidates = [
+            resource_path('css/app.css'),
+            resource_path('sass/app.scss'),
+            base_path('resources/css/app.css'),
+        ];
+ 
+        foreach ($candidates as $path) {
+            if (File::exists($path)) {
+                return $path;
+            }
+        }
+ 
+        return null;
     }
 
     protected function findLayout(): ?string
