@@ -6,9 +6,11 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
 use JarenUI\Commands\InstallCommand;
+use JarenUI\Commands\MakeEventCalendarCommand;
 use JarenUI\Commands\PublishCommand;
 use JarenUI\Commands\MakeTableCommand;
 use JarenUI\Commands\MakeKanbanCommand;
+use JarenUI\Livewire\Casts\DateRangeSynth;
 
 class JarenUIServiceProvider extends ServiceProvider
 {
@@ -77,6 +79,9 @@ class JarenUIServiceProvider extends ServiceProvider
         'sidebar.section'=> 'sidebar.section',
         'sidebar.item'   => 'sidebar.item',
         'sidebar.user'   => 'sidebar.user',
+
+        // Advanced UI components.
+        'calendar'      => 'calendar',
     ];
 
     /**
@@ -86,6 +91,7 @@ class JarenUIServiceProvider extends ServiceProvider
         'jaren.toast'  => \JarenUI\Livewire\Toast::class,
         'jaren.table'  => \JarenUI\Livewire\Table::class,
         'jaren.kanban' => \JarenUI\Livewire\Kanban::class,
+        'jaren.event-calendar' => \JarenUI\Livewire\EventCalendar::class,
     ];
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -125,6 +131,9 @@ class JarenUIServiceProvider extends ServiceProvider
             Livewire::component($name, $class);
         }
 
+        // Register DateRange synth so wire:model works with ?DateRange properties
+        Livewire::propertySynthesizer(DateRangeSynth::class);
+
         // ── Blade directives ───────────────────────────────────────────────────
         $this->registerBladeDirectives();
 
@@ -138,6 +147,7 @@ class JarenUIServiceProvider extends ServiceProvider
                 PublishCommand::class,
                 MakeTableCommand::class,
                 MakeKanbanCommand::class,
+                MakeEventCalendarCommand::class,
             ]);
         }
     }

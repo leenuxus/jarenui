@@ -1,4 +1,4 @@
-# jarenui for Laravel Livewire
+# JarenUI for Laravel Livewire
 
 [![Latest Version](https://img.shields.io/packagist/v/leenuxus/jarenui.svg)](https://packagist.org/packages/leenuxus/jarenui)
 [![PHP Version](https://img.shields.io/packagist/php-v/leenuxus/jarenui.svg)](https://packagist.org/packages/leenuxus/jarenui)
@@ -16,7 +16,7 @@
 | Laravel        | `^13`          |
 | Livewire       | `^4.0`         |
 | Alpine.js      | `^3.0`         |
-| Tailwind CSS   | `^3.0` (optional — all styling uses CSS variables) |
+| Tailwind CSS   | `^4.0` (optional — all styling uses CSS variables) |
 
 ---
 
@@ -28,7 +28,6 @@ php artisan jaren:install
 ```
 
 That's it. The installer:
-- Publishes `public/vendor/jarenui/css/jarenui.css` (design tokens)
 - Publishes `config/jarenui.php`
 - Injects `@jarenStyles` into your layout `<head>`
 - Injects `<livewire:jaren.toast/>` before your `</body>`
@@ -47,7 +46,7 @@ If you prefer not to use the installer:
 
 ### Alpine.js
 
-jarenui uses Alpine.js for interactivity. Load it in your layout or `app.js`:
+JarenUI uses Alpine.js for interactivity. Load it in your layout or `app.js`:
 
 ```html
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -429,6 +428,288 @@ php artisan jaren:make-kanban ProjectKanban
 ```blade
 <livewire:project-kanban/>
 ```
+
+---
+
+## Calendar
+
+A full-featured calendar component for date selection. Supports single dates, multiple dates, and date ranges.
+
+### Basic usage
+
+```blade
+<x-jaren::calendar />
+
+{{-- With initial value --}}
+<x-jaren::calendar value="2026-05-29" />
+
+{{-- Bound to Livewire --}}
+<x-jaren::calendar wire:model="date" />
+```
+
+### Multiple dates
+
+```blade
+<x-jaren::calendar multiple wire:model="dates" />
+```
+
+```php
+public array $dates = [];
+```
+
+### Date range
+
+```blade
+<x-jaren::calendar mode="range" wire:model="range" />
+```
+
+```php
+use JarenUI\DateRange;
+
+public ?DateRange $range;
+
+public function mount(): void
+{
+    $this->range = new DateRange(now(), now()->addDays(7));
+}
+```
+
+### Props
+
+| Prop               | Type / Values                               | Default   |
+|--------------------|---------------------------------------------|-----------|
+| `wire:model`       | Livewire property binding                   | —         |
+| `value`            | `Y-m-d` / `Y-m-d,Y-m-d` / `Y-m-d/Y-m-d`  | —         |
+| `mode`             | `single` `multiple` `range`                 | `single`  |
+| `min`              | `Y-m-d` or `'today'`                        | —         |
+| `max`              | `Y-m-d` or `'today'`                        | —         |
+| `unavailable`      | comma-separated `Y-m-d` list                | —         |
+| `size`             | `xs` `sm` `base` `lg` `xl` `2xl`           | `base`    |
+| `months`           | integer                                     | 1 (2 for range) |
+| `min-range`        | integer (days)                              | —         |
+| `max-range`        | integer (days)                              | —         |
+| `start-day`        | `0`–`6` (0 = Sunday)                        | user locale |
+| `with-today`       | bool                                        | `false`   |
+| `selectable-header`| bool — click month/year to jump             | `false`   |
+| `fixed-weeks`      | bool — always show 6 rows                   | `false`   |
+| `week-numbers`     | bool                                        | `false`   |
+| `open-to`          | `Y-m-d`                                     | —         |
+| `force-open-to`    | bool                                        | `false`   |
+| `static`           | bool — display only, no interaction         | `false`   |
+| `navigation`       | bool — show prev/next buttons               | `true`    |
+| `locale`           | BCP-47 string e.g. `fr`, `ja-JP`            | browser   |
+
+### DateRange object
+
+```php
+use JarenUI\DateRange;
+
+$range = new DateRange(now()->subDays(6), now());
+
+$range->start();          // Carbon — start date
+$range->end();            // Carbon — end date
+$range->length();         // int — number of days inclusive
+$range->contains($date);  // bool
+$range->toArray();        // Carbon[] — one per day
+(string) $range;          // '2026-05-22/2026-05-29'
+
+// With Eloquent:
+Order::whereBetween('created_at', $range)->get();
+```
+
+Persist in the session automatically:
+
+```php
+use Livewire\Attributes\Session;
+
+#[Session]
+public ?DateRange $range;
+```
+
+### Events
+
+The calendar dispatches an `jaren-calendar-change` Alpine event whenever the selection changes:
+
+```js
+document.addEventListener('jaren-calendar-change', (e) => {
+    console.log(e.detail.value); // 'Y-m-d' | string[] | {start, end}
+});
+```
+
+---
+
+## Event Calendar
+
+A full-featured Livewire calendar with month, week, and day views for displaying and managing events.
+
+### Quick start
+
+Generate a calendar component:
+
+```bash
+php artisan jaren:make-event-calendar MeetingsCalendar --model=Meeting
+```
+
+Use in Blade:
+
+```blade
+<livewire:jaren.meetings-calendar />
+```
+
+### Static events (no database)
+
+```blade
+@php
+use JarenUI\CalendarEvent;
+
+$events = [
+    new CalendarEvent(
+        id:    1,
+        title: 'Team standup',
+        start: '2026-05-30 09:00',
+        end:   '2026-05-30 09:30',
+        color: 'blue',
+        description: 'Daily sync',
+    ),
+];
+@endphp
+
+<livewire:jaren.event-calendar :events="$events" />
+```
+
+### Loading from a database
+
+Override `fetchEvents()` in your subclass. It receives the visible date window as two Carbon instances:
+
+```php
+class MeetingsCalendar extends \JarenUI\Livewire\EventCalendar
+{
+    public function fetchEvents(Carbon $from, Carbon $to): array
+    {
+        return CalendarEvent::fromCollection(
+            Meeting::whereBetween('starts_at', [$from, $to])->get(),
+            startKey:       'starts_at',
+            endKey:         'ends_at',
+            titleKey:       'title',
+            colorKey:       'category_color',
+            descriptionKey: 'notes',
+        );
+    }
+}
+```
+
+`fetchEvents()` is called automatically whenever the view or visible period changes.
+
+### CalendarEvent
+
+```php
+use JarenUI\CalendarEvent;
+
+// Construct directly
+$event = new CalendarEvent(
+    id:          1,
+    title:       'Sprint planning',
+    start:       '2026-05-30 10:00',
+    end:         '2026-05-30 12:00',
+    color:       'green',        // blue|green|amber|red|purple|teal|pink|coral|gray
+    description: 'Plan Q3 sprint backlog',
+    url:         'https://notion.so/sprint-doc',
+    allDay:      false,
+    meta:        ['room' => 'Conf room A'],
+);
+
+// Cast from an Eloquent model
+$event = CalendarEvent::from($meeting,
+    startKey: 'starts_at',
+    endKey:   'ends_at',
+);
+
+// Cast from a collection
+$events = CalendarEvent::fromCollection(
+    Meeting::inMonth(2026, 5)->get(),
+    startKey: 'starts_at',
+    endKey:   'ends_at',
+);
+
+// Accessors
+$event->date();             // '2026-05-30'
+$event->startTime();        // '10:00'
+$event->endTime();          // '12:00'
+$event->durationMinutes();  // 120
+$event->spansMultipleDays();// false
+$event->toArray();          // array for wire:model / JSON
+```
+
+### Component props
+
+| Prop              | Type / Values                        | Default      |
+|-------------------|--------------------------------------|--------------|
+| `events`          | `CalendarEvent[]` or plain arrays    | `[]`         |
+| `view`            | `month` `week` `day`                 | `month`      |
+| `show-toolbar`    | bool                                 | `true`       |
+| `show-detail`     | bool — event detail panel            | `true`       |
+| `creatable`       | bool — click empty date to create    | `false`      |
+| `start-day`       | `0`–`6` (0 = Sunday, 1 = Monday)     | `0`          |
+| `locale`          | BCP-47 string e.g. `fr`, `ja-JP`     | `en`         |
+| `available-views` | array of view names                  | all three    |
+| `day-start-hour`  | integer                              | `7`          |
+| `day-end-hour`    | integer                              | `20`         |
+
+### Override in subclass
+
+```php
+class MeetingsCalendar extends \JarenUI\Livewire\EventCalendar
+{
+    public array  $availableViews = ['month', 'week'];  // hide day view
+    public bool   $creatable      = true;
+    public int    $startDay       = 1;                  // Monday
+    public string $view           = 'week';             // default to week view
+    public int    $dayStartHour   = 8;
+    public int    $dayEndHour     = 18;
+
+    public function fetchEvents(Carbon $from, Carbon $to): array { ... }
+}
+```
+
+### Events dispatched
+
+| Event                    | Payload                              | When                         |
+|--------------------------|--------------------------------------|------------------------------|
+| `jaren-event-selected`   | `{event: array}`                     | User clicks an event         |
+| `jaren-event-created`    | `{date: 'Y-m-d'}`                    | User clicks empty date (creatable) |
+| `jaren-event-moved`      | `{id, date, start, end}`             | Drag-and-drop (frontend)     |
+| `jaren-view-changed`     | `{view, year, month}`                | View or period changes       |
+| `jaren-date-clicked`     | `{date: 'Y-m-d'}`                    | Any date click               |
+
+Listen in Livewire:
+
+```php
+#[On('jaren-event-selected')]
+public function onEventSelected(array $event): void
+{
+    $this->selectedId = $event['id'];
+}
+
+#[On('jaren-event-created')]
+public function onEventCreated(string $date): void
+{
+    $this->dispatch('open-modal', name: 'create-event', date: $date);
+}
+```
+
+### Event colours
+
+| Value    | Appearance         |
+|----------|--------------------|
+| `blue`   | Blue (default)     |
+| `green`  | Green              |
+| `amber`  | Amber / gold       |
+| `red`    | Red                |
+| `purple` | Purple             |
+| `teal`   | Teal               |
+| `pink`   | Pink               |
+| `coral`  | Coral / orange     |
+| `gray`   | Neutral gray       |
 
 ---
 

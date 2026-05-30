@@ -8,7 +8,7 @@ namespace JarenUI;
  */
 class JarenUI
 {
-    protected string $version = '1.0.0';
+    protected string $version = '1.1.0';
 
     /** Currently registered theme override (applied globally). */
     protected ?string $theme = null;
