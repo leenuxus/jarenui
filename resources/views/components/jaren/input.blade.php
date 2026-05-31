@@ -1,32 +1,35 @@
 @props([
     'label'       => null,
     'hint'        => null,
-    'error'       => null,       // error message string
-    'icon'        => null,       // leading Heroicon name
-    'iconEnd'     => null,       // trailing Heroicon name
-    'prefix'      => null,       // inline text prefix (e.g. "https://")
-    'suffix'      => null,       // inline text suffix (e.g. ".com")
-    'size'        => 'md',       // sm | md | lg
+    'error'       => null,
+    'icon'        => null,
+    'iconEnd'     => null,
+    'prefix'      => null,
+    'suffix'      => null,
+    'size'        => 'md',
     'id'          => null,
-    'clearable'   => false,      // show × when has value
-    'copyable'    => false,      // show copy-to-clipboard button
+    'clearable'   => false,
+    'copyable'    => false,
 ])
 
 @php
 $inputId = $id ?? 'input-' . \Illuminate\Support\Str::random(6);
 
 $sizes = [
-    'sm' => ['wrap' => 'h-8',   'text' => 'text-xs',    'icon' => 'w-3.5 h-3.5', 'px' => 'px-2.5'],
-    'md' => ['wrap' => 'h-[34px]', 'text' => 'text-[13px]','icon' => 'w-4 h-4',  'px' => 'px-3'],
-    'lg' => ['wrap' => 'h-10',  'text' => 'text-sm',    'icon' => 'w-[18px] h-[18px]', 'px' => 'px-3.5'],
+    'sm' => ['wrap' => 'h-8',      'text' => 'text-xs',     'icon' => 'w-3.5 h-3.5',      'px' => 'px-2.5'],
+    'md' => ['wrap' => 'h-[34px]', 'text' => 'text-[13px]', 'icon' => 'w-4 h-4',           'px' => 'px-3'],
+    'lg' => ['wrap' => 'h-10',     'text' => 'text-sm',     'icon' => 'w-[18px] h-[18px]', 'px' => 'px-3.5'],
 ];
 $sz = $sizes[$size] ?? $sizes['md'];
 
 $hasLeftAddon  = $icon || $prefix;
 $hasRightAddon = $iconEnd || $suffix || $clearable || $copyable || $error;
 
-$inputPaddingL = $hasLeftAddon  ? 'pl-9'  : $sz['px'];
-$inputPaddingR = $hasRightAddon ? 'pr-9'  : $sz['px'];
+$inputPaddingL = $hasLeftAddon  ? 'pl-9' : $sz['px'];
+$inputPaddingR = $hasRightAddon ? 'pr-9' : $sz['px'];
+
+// FIX 3: x-ref is needed for BOTH clearable and copyable
+$needsRef = $clearable || $copyable;
 
 $inputBase = implode(' ', [
     'w-full', $sz['wrap'], $sz['text'], $inputPaddingL, $inputPaddingR,
@@ -45,12 +48,8 @@ $inputBase = implode(' ', [
     {{ $attributes->only('class', 'wire:key', 'wire:ignore')->merge(['class' => 'flex flex-col gap-1']) }}
     x-data="jarenInput()"
 >
-    {{-- Label --}}
     @if($label)
-        <label
-            for="{{ $inputId }}"
-            class="text-xs font-medium text-[var(--text2)] leading-none"
-        >
+        <label for="{{ $inputId }}" class="text-xs font-medium text-[var(--text2)] leading-none">
             {{ $label }}
             @if($attributes->has('required'))
                 <span class="text-[var(--danger-text)] ml-0.5" aria-hidden="true">*</span>
@@ -58,10 +57,8 @@ $inputBase = implode(' ', [
         </label>
     @endif
 
-    {{-- Input wrapper --}}
     <div class="relative flex items-center">
 
-        {{-- Leading icon / prefix --}}
         @if($icon)
             <span class="absolute left-2.5 pointer-events-none text-[var(--text3)]" aria-hidden="true">
                 <x-dynamic-component :component="'heroicon-o-'.$icon" class="{{ $sz['icon'] }}"/>
@@ -72,16 +69,18 @@ $inputBase = implode(' ', [
             </span>
         @endif
 
-        {{-- The actual input --}}
+        {{-- FIX 1: Removed invalid @bind="value" directive
+             FIX 2: x-ref now added for clearable OR copyable
+             FIX 4: @input listener tracks value for the clearable x-show check --}}
         <input
             id="{{ $inputId }}"
             {{ $attributes->except(['class','wire:key','wire:ignore','label','hint','error','icon','icon-end','prefix','suffix','clearable','copyable','size','id'])->merge(['class' => $inputBase]) }}
-            @if($clearable) x-ref="input" @bind="value" @endif
+            @if($needsRef) x-ref="input" @endif
+            @if($clearable) @input="value = $event.target.value" @endif
             aria-describedby="{{ $hint || $error ? $inputId.'-desc' : '' }}"
             aria-invalid="{{ $error ? 'true' : 'false' }}"
         >
 
-        {{-- Trailing: error icon / suffix text / clearable / copyable --}}
         @if($error)
             <span class="absolute right-2.5 pointer-events-none text-[var(--danger-text)]" aria-hidden="true">
                 <svg class="{{ $sz['icon'] }}" viewBox="0 0 20 20" fill="currentColor">
@@ -89,11 +88,19 @@ $inputBase = implode(' ', [
                 </svg>
             </span>
         @elseif($clearable)
+            {{-- FIX 2: Clear button now dispatches a native 'input' event so
+                 wire:model (and wire:model.live) pick up the empty value --}}
             <button
                 type="button"
                 x-show="value !== ''"
                 x-transition
-                @click="value = ''; $refs.input.focus()"
+                @click="
+                    value = '';
+                    $refs.input.value = '';
+                    $refs.input.dispatchEvent(new Event('input', { bubbles: true }));
+                    $refs.input.dispatchEvent(new Event('change', { bubbles: true }));
+                    $refs.input.focus();
+                "
                 class="absolute right-2.5 text-[var(--text3)] hover:text-[var(--text)] transition-colors"
                 aria-label="Clear input"
             >
@@ -102,6 +109,7 @@ $inputBase = implode(' ', [
                 </svg>
             </button>
         @elseif($copyable)
+            {{-- FIX 3: $refs.input now exists because $needsRef includes copyable --}}
             <button
                 type="button"
                 @click="
@@ -135,7 +143,6 @@ $inputBase = implode(' ', [
         @endif
     </div>
 
-    {{-- Hint / error message --}}
     @if($error)
         <p id="{{ $inputId }}-desc" class="text-[11px] text-[var(--danger-text)] leading-tight" role="alert">
             {{ $error }}
