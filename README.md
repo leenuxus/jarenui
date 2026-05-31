@@ -6,7 +6,7 @@
 
 **50+ production-ready Livewire components** — dark mode, CSS-variable theming, Alpine.js interactivity, full ARIA accessibility, and zero Tailwind config required.
 
->>My personal Blade + Livewire component library for Laravel. Built for my own projects — not a full UI framework, just the components I keep rewriting.
+>My personal Blade + Livewire component library for Laravel. Built for my own projects — not a full UI framework, just the components I keep rewriting.
 
 ---
 
