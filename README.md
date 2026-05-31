@@ -210,6 +210,23 @@ Toggle dynamically with Alpine:
     clearable copyable size="sm|md|lg" wire:model="name"/>
 ```
 
+Password with toggle
+
+```blade
+<x-jaren::input
+    name="password"
+    type="password"
+    label="Password"
+    icon="lock-closed"
+    toggleable
+    size="md"
+    :error="$errors->first('password')"
+    required
+/>
+```
+
+> **Note:** `toggleable` occupies the trailing addon slot. Do not combine it with `clearable`, `copyable`, `icon-end`, or `suffix` on the same input.
+
 **`<x-jaren::textarea>`**
 ```blade
 <x-jaren::textarea label="Bio" :rows="4" resize="none|vertical|both"

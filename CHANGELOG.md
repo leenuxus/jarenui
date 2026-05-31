@@ -4,7 +4,15 @@ All notable changes to `jarenui/livewire` will be documented in this file.
 
 ---
 
-## [1.1.1] — 2025-06-01
+## [1.1.2] — 2025-05-31
+
+### Added
+
+- **`toggleable` prop on `<x-jaren::input>`** — password inputs now support a show/hide toggle button in the trailing slot. Set `type="password" toggleable` and the eye/eye-slash icon handles the rest. Alpine manages the input type reactively; the `name` attribute and Livewire `wire:model` are unaffected.
+
+---
+
+## [1.1.0] — 2025-06-01
 
 ### Added
 
