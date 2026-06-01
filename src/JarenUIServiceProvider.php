@@ -7,6 +7,7 @@ use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
 use JarenUI\Commands\InstallCommand;
 use JarenUI\Commands\MakeEventCalendarCommand;
+use JarenUI\Commands\MakeWizardCommand;
 use JarenUI\Commands\PublishCommand;
 use JarenUI\Commands\MakeTableCommand;
 use JarenUI\Commands\MakeKanbanCommand;
@@ -82,6 +83,7 @@ class JarenUIServiceProvider extends ServiceProvider
 
         // Advanced UI components.
         'calendar'      => 'calendar',
+        'wizard'        => 'wizard',
     ];
 
     /**
@@ -92,6 +94,7 @@ class JarenUIServiceProvider extends ServiceProvider
         'jaren.table'  => \JarenUI\Livewire\Table::class,
         'jaren.kanban' => \JarenUI\Livewire\Kanban::class,
         'jaren.event-calendar' => \JarenUI\Livewire\EventCalendar::class,
+        'jaren.wizard'         => \JarenUI\Livewire\Wizard::class,
     ];
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -148,6 +151,7 @@ class JarenUIServiceProvider extends ServiceProvider
                 MakeTableCommand::class,
                 MakeKanbanCommand::class,
                 MakeEventCalendarCommand::class,
+                MakeWizardCommand::class,
             ]);
         }
     }

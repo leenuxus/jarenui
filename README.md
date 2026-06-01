@@ -6,8 +6,6 @@
 
 **50+ production-ready Livewire components** — dark mode, CSS-variable theming, Alpine.js interactivity, full ARIA accessibility, and zero Tailwind config required.
 
->My personal Blade + Livewire component library for Laravel. Built for my own projects — not a full UI framework, just the components I keep rewriting.
-
 ---
 
 ## Requirements
@@ -729,6 +727,198 @@ public function onEventCreated(string $date): void
 | `pink`   | Pink               |
 | `coral`  | Coral / orange     |
 | `gray`   | Neutral gray       |
+
+---
+
+## Wizard
+
+A multi-step form component with a progress stepper, per-step validation, and built-in navigation.
+
+### Generate a wizard
+
+```bash
+php artisan jaren:make-wizard OnboardingWizard --steps=account,plan,features,review
+```
+
+This creates:
+- `app/Livewire/OnboardingWizard.php` — the PHP class
+- `resources/views/livewire/onboarding-wizard/account.blade.php`
+- `resources/views/livewire/onboarding-wizard/plan.blade.php`
+- `resources/views/livewire/onboarding-wizard/features.blade.php`
+- `resources/views/livewire/onboarding-wizard/review.blade.php`
+
+Use in Blade:
+```blade
+<livewire:jaren.onboarding-wizard/>
+```
+
+---
+
+### Anatomy
+
+```php
+class OnboardingWizard extends \JarenUI\Livewire\Wizard
+{
+    // Step definitions — id + label (+ optional icon)
+    public array $steps = [
+        ['id' => 'account',  'label' => 'Account'],
+        ['id' => 'plan',     'label' => 'Plan'],
+        ['id' => 'review',   'label' => 'Review'],
+    ];
+
+    // One property bag per step
+    public array $account = ['name' => '', 'email' => ''];
+    public array $plan    = ['plan_id' => null];
+
+    // Per-step validation rules
+    protected array $stepRules = [
+        'account' => [
+            'account.name'  => 'required|string|max:100',
+            'account.email' => 'required|email',
+        ],
+        'plan' => [
+            'plan.plan_id' => 'required',
+        ],
+    ];
+
+    // Render each step from a Blade partial
+    public function renderAccount(): string
+    {
+        return view('livewire.onboarding-wizard.account', [
+            'data' => $this->account,
+        ])->render();
+    }
+
+    public function renderPlan(): string
+    {
+        return view('livewire.onboarding-wizard.plan', [
+            'data' => $this->plan,
+        ])->render();
+    }
+
+    // Called when Next is pressed on the last step
+    public function submit(): void
+    {
+        User::create($this->account);
+        Subscription::create(['user_id' => auth()->id(), ...$this->plan]);
+
+        $this->complete();  // marks wizard as done, shows success panel
+    }
+
+    // Data attached to the jaren-wizard-completed event
+    protected function completedData(): array
+    {
+        return ['account' => $this->account, 'plan' => $this->plan];
+    }
+}
+```
+
+---
+
+### Component props
+
+| Prop            | Type / Values                    | Default     |
+|-----------------|----------------------------------|-------------|
+| `steps`         | `array` — step definitions       | `[]`        |
+| `variant`       | `default` `numbered` `minimal`   | `default`   |
+| `size`          | `sm` `md` `lg`                   | `md`        |
+| `show-icons`    | bool — use icons instead of nums | `false`     |
+| `clickable`     | bool — click past steps to jump  | `true`      |
+| `show-progress` | bool — linear progress bar       | `false`     |
+
+---
+
+### Stepper variants
+
+| Variant    | Appearance |
+|------------|------------|
+| `default`  | Numbered dots with labels, connecting line, green when done |
+| `numbered` | Same as default |
+| `minimal`  | Small dot pills — active dot expands to a pill |
+
+```blade
+<livewire:jaren.onboarding-wizard variant="minimal"/>
+<livewire:jaren.onboarding-wizard variant="default" show-progress/>
+```
+
+---
+
+### Hooks
+
+```php
+// Called when about to leave a step — useful for cleanup
+protected function onStepLeaving(string $stepId): void
+{
+    if ($stepId === 'payment') {
+        // release any held resources
+    }
+}
+
+// Called just after entering a step — useful for loading data
+protected function onStepEntering(string $stepId): void
+{
+    if ($stepId === 'review') {
+        $this->summary = $this->buildSummary();
+    }
+}
+
+// Called when cancel() is triggered
+protected function onCancel(): void
+{
+    session()->forget('wizard_progress');
+}
+```
+
+---
+
+### Events dispatched
+
+| Event                      | Payload                        | When                         |
+|----------------------------|--------------------------------|------------------------------|
+| `jaren-wizard-step-changed` | `{step: string, index: int}`  | Any step navigation          |
+| `jaren-wizard-completed`    | `{data: array}`               | `complete()` is called       |
+| `jaren-wizard-cancelled`    | —                              | `cancel()` is called         |
+
+Listen in another Livewire component:
+
+```php
+#[On('jaren-wizard-completed')]
+public function onWizardDone(array $data): void
+{
+    $this->redirect(route('dashboard'));
+}
+```
+
+---
+
+### Custom complete panel
+
+Pass a `$complete` named slot to replace the default success screen:
+
+```blade
+<livewire:jaren.onboarding-wizard>
+    <x-slot:complete>
+        <div class="text-center py-6">
+            <h2 class="text-xl font-medium">Welcome aboard!</h2>
+            <p class="mt-2 text-[var(--text2)]">Your account is ready.</p>
+            <a href="{{ route('dashboard') }}" class="mt-4 inline-block ...">
+                Go to dashboard →
+            </a>
+        </div>
+    </x-slot:complete>
+</livewire:jaren.onboarding-wizard>
+```
+
+---
+
+### Navigation methods (callable from Blade)
+
+```blade
+<button wire:click="next">Continue</button>
+<button wire:click="previous">Back</button>
+<button wire:click="goToStep(0)">Jump to step 1</button>
+<button wire:click="cancel">Cancel</button>
+```
 
 ---
 

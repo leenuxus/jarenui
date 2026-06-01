@@ -4,7 +4,49 @@ All notable changes to `jarenui/livewire` will be documented in this file.
 
 ---
 
-## [1.1.2] — 2025-05-31
+## [1.3.0] — 2026-06-01
+
+### Added
+
+**`JarenUI\Livewire\Wizard`** — abstract base class for multi-step form wizards:
+
+- **Step definitions** — `$steps` array with `id`, `label`, and optional `icon` per step
+- **Three stepper variants:** `default` (numbered dots + connecting line), `numbered` (same), `minimal` (expanding dot pills)
+- **Three sizes:** `sm`, `md`, `lg` — scales typography, padding, and dot dimensions
+- **Progress bar** — optional linear bar beneath the stepper (`show-progress`)
+- **Clickable back-navigation** — clicking a completed step dot jumps back to it (`clickable`)
+- **Per-step validation** — `$stepRules` array keyed by step id; runs Laravel's `validate()` automatically on `next()`
+- **Lifecycle hooks** — `onStepLeaving()`, `onStepEntering()`, `onCancel()`
+- **Submit hook** — `submit()` called on the final step's Continue press; call `complete()` to mark done
+- **`completedData()`** — return array attached to `jaren-wizard-completed` event
+- **Named slots** — pass `$complete` slot to replace the default success screen; pass `$cancelButton` to add a cancel link in the footer
+- **Loading state** — Continue button shows spinner and is disabled during Livewire request
+- **Error summary** — validation errors collected from all rules shown in a danger callout inside the step body
+- **Aria / accessibility** — `role="region"`, `aria-current="step"` on active step, `role="progressbar"` on progress bar, `role="tabpanel"` on step panels
+
+**`php artisan jaren:make-wizard`** — scaffolding command:
+- Generates PHP class extending `JarenUI\Livewire\Wizard`
+- Generates per-step Blade partials in `resources/views/livewire/{name}/`
+- `--steps=` option: comma-separated step ids
+- `--variant=` option: `default|numbered|minimal`
+- `--size=` option: `sm|md|lg`
+- `--force` to overwrite
+
+**Events dispatched:**
+- `jaren-wizard-step-changed` — `{step, index}` — any navigation
+- `jaren-wizard-completed` — `{data}` — on `complete()`
+- `jaren-wizard-cancelled` — on `cancel()`
+
+**Blade view** (`resources/views/components/jaren/wizard.blade.php`):
+- Stepper bar with done/active/pending states and transition colours
+- Step body with per-step slot/method rendering
+- Footer with Back + Continue/Submit buttons and step counter
+- Completed and cancelled state panels
+
+
+---
+
+## [1.1.2] — 2026-05-31
 
 ### Added
 
@@ -12,7 +54,7 @@ All notable changes to `jarenui/livewire` will be documented in this file.
 
 ---
 
-## [1.1.0] — 2025-06-01
+## [1.1.0] — 2026-06-01
 
 ### Added
 
@@ -122,7 +164,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.0.0] — 2025-05-29
+## [1.0.0] — 2026-05-29
 
 ### Added
 
@@ -195,5 +237,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Test suite:** 40+ Pest tests covering all Livewire components and Blade rendering
 
 **Auto-discovery** via `extra.laravel` in `composer.json`
-
-**Multi-version CI** — PHP 8.1/8.2/8.3 × Laravel 10/11/12
