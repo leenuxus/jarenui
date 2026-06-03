@@ -4,6 +4,63 @@ All notable changes to `jarenui/livewire` will be documented in this file.
 
 ---
 
+## [1.4.0] — 2026-06-03
+
+### Added
+
+**`<x-jaren::combobox>`** — full-featured Blade + Alpine.js combobox:
+
+**Modes:**
+- **Single select** — searchable dropdown that replaces `<x-jaren::select>` for more complex needs
+- **Multi-select** — pill-based multiple selection with backspace-to-remove
+- **Creatable** — users can type a new value and create it on the fly; dispatches `jaren-combobox-create`
+- **Async (JS)** — fires `jaren-combobox-search` event with query + callback; works with any API or data source
+
+**Option features:**
+- **Groups** — `grouped` prop groups options under labelled headers using `option['group']`
+- **Avatars** — `with-avatars` shows initials with custom background colour per option
+- **Badges** — `with-badges` shows a pill badge per option
+- **Descriptions** — `with-descriptions` shows a sub-label below the option name
+- **Meta text** — right-aligned text per option (version, count, hint)
+- **Disabled options** — individual options can be disabled via `option['disabled']`
+
+**UX:**
+- Full keyboard navigation: Arrow Up/Down, Enter to select, Escape to close, Tab to confirm, Backspace to remove last pill
+- Scroll into view on keyboard focus
+- Transition animations on open/close
+- Loading spinner while async results load
+- Empty state with search icon
+- Clear button (single: clears value; multiple: clears all pills)
+- Per-option checkmark for selected state
+- Max selected limit (`max-selected` prop)
+- `close-on-select` — auto-closes on single select (default), stays open on multi
+
+**Sizes:** `xs` `sm` `md` `lg` `xl` `2xl` — inherits from `<x-jaren::form-size>` wrapper
+
+**`JarenUI\Livewire\AsyncCombobox`** — server-side search Livewire component:
+- Extend and override `search(string $query): array`
+- Inline mode: pass `model`, `label-column`, `value-column`, `searchable-columns` props without subclassing
+- `minChars` — minimum characters before search fires (default 1)
+- `limit` — max results (default 10)
+- Debounced 300ms via `wire:model.live.debounce.300ms`
+- `with-avatars`, `with-descriptions`, `with-badges` display props
+- Multi-select mode with pill display
+
+**`php artisan jaren:make-combobox`** — scaffolding command:
+- `--model=User` — generates Livewire AsyncCombobox subclass with correct columns
+- `--search=name,email` — comma-separated searchable columns
+- `--label=name` / `--value=id` — column mapping
+- `--multiple` — enables multi-select in generated class
+- `--async` — force Livewire subclass even without `--model`
+- Without `--model`: generates a Blade usage snippet
+
+**Events:**
+- `jaren-combobox-change` — `{value, option}` — any selection/deselection
+- `jaren-combobox-create` — `{value, label}` — new creatable option added
+- `jaren-combobox-search` — `{query, callback}` — JS async search hook
+
+---
+
 ## [1.3.0] — 2026-06-01
 
 ### Added

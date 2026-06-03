@@ -922,6 +922,209 @@ Pass a `$complete` named slot to replace the default success screen:
 
 ---
 
+## Combobox
+
+A versatile combobox that handles basic autocomplete, multi-select, grouped options, async server-side search, and creatable options — all in one component.
+
+### Basic autocomplete
+
+```blade
+<x-jaren::combobox
+    label="Framework"
+    placeholder="Select a framework…"
+    wire:model="framework"
+    :options="['laravel' => 'Laravel', 'vue' => 'Vue.js', 'react' => 'React']"
+/>
+```
+
+### Multi-select with pills
+
+```blade
+<x-jaren::combobox
+    label="Technologies"
+    wire:model="stack"
+    multiple
+    :options="$techOptions"
+    :max-selected="5"
+/>
+```
+
+### Grouped options
+
+```blade
+<x-jaren::combobox
+    label="Assign to"
+    wire:model="userId"
+    grouped
+    with-avatars
+    with-descriptions
+    :options="[
+        ['value' => 1, 'label' => 'Jane Doe',   'group' => 'Engineering', 'description' => 'Lead engineer', 'initials' => 'JD', 'color' => '#185FA5'],
+        ['value' => 2, 'label' => 'Alex Kim',   'group' => 'Engineering', 'description' => 'Backend dev',   'initials' => 'AK', 'color' => '#7C3AED'],
+        ['value' => 3, 'label' => 'Mia Lee',    'group' => 'Design',      'description' => 'UI/UX',         'initials' => 'ML', 'color' => '#B52676'],
+    ]"
+/>
+```
+
+### Creatable (add new options on the fly)
+
+```blade
+<x-jaren::combobox
+    label="Tags"
+    wire:model="tags"
+    multiple
+    creatable
+    :options="$existingTags"
+    @jaren-combobox-create="handleNewTag($event.detail)"
+/>
+```
+
+### Async server-side search
+
+Generate a Livewire-backed combobox:
+
+```bash
+php artisan jaren:make-combobox UserCombobox --model=User --search=name,email
+```
+
+Use it:
+
+```blade
+<livewire:jaren.user-combobox wire:model="userId" label="Assign to"/>
+```
+
+Or inline without subclassing:
+
+```blade
+<livewire:jaren.async-combobox
+    model="\App\Models\User"
+    label="Assign to"
+    label-column="name"
+    value-column="id"
+    :searchable-columns="['name', 'email']"
+    with-avatars
+    wire:model="userId"
+/>
+```
+
+---
+
+### Option shape
+
+Every option can be a plain string (using key as value) or a full array:
+
+```php
+[
+    'value'       => 1,           // required — submitted value
+    'label'       => 'Jane Doe',  // required — display text
+    'group'       => 'Engineering', // optional — group header
+    'meta'        => 'Admin',     // optional — right-aligned text
+    'description' => 'Lead engineer', // optional — sub-label (with-descriptions)
+    'badge'       => 'Pro',       // optional — pill badge (with-badges)
+    'initials'    => 'JD',        // optional — avatar letters (with-avatars)
+    'color'       => '#185FA5',   // optional — avatar background colour
+    'disabled'    => false,       // optional — grey out and prevent selection
+]
+```
+
+---
+
+### Props
+
+| Prop               | Type / Values                       | Default             |
+|--------------------|-------------------------------------|---------------------|
+| `options`          | array of strings or option arrays   | `[]`                |
+| `multiple`         | bool                                | `false`             |
+| `searchable`       | bool                                | `true`              |
+| `clearable`        | bool                                | `true`              |
+| `creatable`        | bool — allow adding new options     | `false`             |
+| `grouped`          | bool — group by `option['group']`   | `false`             |
+| `async`            | bool — fire JS search event         | `false`             |
+| `max-selected`     | int (multiple mode)                 | `null`              |
+| `close-on-select`  | bool                                | `true` (single), `false` (multiple) |
+| `with-avatars`     | bool                                | `false`             |
+| `with-badges`      | bool                                | `false`             |
+| `with-descriptions`| bool                                | `false`             |
+| `size`             | `xs` `sm` `md` `lg` `xl` `2xl`     | `md`                |
+| `placeholder`      | string                              | `'Select an option…'` |
+| `search-placeholder`| string                             | `'Search…'`         |
+| `empty-text`       | string                              | `'No options found'` |
+| `label`            | string                              | —                   |
+| `hint`             | string                              | —                   |
+| `error`            | string                              | —                   |
+
+---
+
+### Events dispatched
+
+| Event                        | Payload                                 | When                       |
+|------------------------------|-----------------------------------------|----------------------------|
+| `jaren-combobox-change`      | `{value, option}`                       | Any selection change       |
+| `jaren-combobox-create`      | `{value, label}`                        | New option created         |
+| `jaren-combobox-search`      | `{query, callback}`                     | Async mode — call `callback(results)` |
+
+Listen in Alpine:
+
+```blade
+<x-jaren::combobox
+    @jaren-combobox-change="console.log($event.detail.value)"
+    @jaren-combobox-create="$wire.addTag($event.detail.label)"
+    ...
+/>
+```
+
+### Async JS search (no Livewire)
+
+For pure client-side async (e.g. fetching from an API):
+
+```blade
+<x-jaren::combobox
+    async
+    label="Search users"
+    wire:model="userId"
+    @jaren-combobox-search="
+        fetch('/api/users?q=' + $event.detail.query)
+            .then(r => r.json())
+            .then(data => $event.detail.callback(data))
+    "
+/>
+```
+
+The `callback` receives the results array and populates the dropdown automatically.
+
+---
+
+### AsyncCombobox Livewire component
+
+Override `search()` in your subclass for full control:
+
+```php
+class CountryCombobox extends \JarenUI\Livewire\AsyncCombobox
+{
+    public string $label       = 'Country';
+    public string $placeholder = 'Search countries…';
+    public int    $minChars    = 2;
+    public int    $limit       = 20;
+
+    public function search(string $query): array
+    {
+        return Country::where('name', 'like', "%{$query}%")
+            ->orderBy('name')
+            ->limit($this->limit)
+            ->get()
+            ->map(fn ($c) => [
+                'value'    => $c->code,
+                'label'    => $c->name,
+                'meta'     => $c->code,
+                'badge'    => $c->region,
+            ])
+            ->toArray();
+    }
+}
+```
+
+---
+
 ## Customising views
 
 Publish views to override any component:

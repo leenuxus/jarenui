@@ -7,6 +7,7 @@ use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
 use JarenUI\Commands\InstallCommand;
 use JarenUI\Commands\MakeEventCalendarCommand;
+use JarenUI\Commands\MakeComboboxCommand;
 use JarenUI\Commands\MakeWizardCommand;
 use JarenUI\Commands\PublishCommand;
 use JarenUI\Commands\MakeTableCommand;
@@ -84,6 +85,7 @@ class JarenUIServiceProvider extends ServiceProvider
         // Advanced UI components.
         'calendar'      => 'calendar',
         'wizard'        => 'wizard',
+        'combobox'      => 'combobox',
     ];
 
     /**
@@ -95,6 +97,7 @@ class JarenUIServiceProvider extends ServiceProvider
         'jaren.kanban' => \JarenUI\Livewire\Kanban::class,
         'jaren.event-calendar' => \JarenUI\Livewire\EventCalendar::class,
         'jaren.wizard'         => \JarenUI\Livewire\Wizard::class,
+        'jaren.async-combobox' => \JarenUI\Livewire\AsyncCombobox::class,
     ];
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -152,6 +155,7 @@ class JarenUIServiceProvider extends ServiceProvider
                 MakeKanbanCommand::class,
                 MakeEventCalendarCommand::class,
                 MakeWizardCommand::class,
+                MakeComboboxCommand::class,
             ]);
         }
     }
